@@ -25,15 +25,16 @@
 #define LEFT 65361
 #define RIGHT 65363
 
+#define BLOCK 25
+
 #define PI 3.14159
 
-#define WIDTH 65
-#define HEIGH 40
+#define WIDTH 15 * 25
+#define HEIGH 9 * 25
 #define PIXEL 32
 
 typedef struct s_cub
 {
-    char map[5][6];
     void *mlx_con;
     void *mlx_win;
     int map_x;
@@ -42,6 +43,8 @@ typedef struct s_cub
     /* player info */
     int fov;
     int pos;
+    char **map;
+
 
     float px;
     float py;
