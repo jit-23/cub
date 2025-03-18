@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/03/16 02:36:55 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/03/17 04:13:47 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 void start_cub(t_cub *cub);
 void init_cub(t_cub *cub);
 void exit_msg(t_cub *cub, char *str);
-void put_square(t_cub *cub, int x, int y, int size);
+void put_square(t_cub *cub, int x, int y, int size, int color);
 int key_press(int kcode, t_cub *cub);
 void close_window(void);
 void move_player(t_cub *cub);
@@ -25,7 +25,7 @@ int  draw_loop(t_cub *cub);
 void clear_win(t_cub *cub);
 char **get_map(void);
 void draw_map(t_cub *game);
-void draw_line(t_cub *cub);
+void draw_line(t_cub *cub, float start_x, int i);
 
 
 
@@ -67,20 +67,20 @@ void put_pixel(t_cub *cub, int x, int y, int color)
 	mlx_pixel_put(cub->mlx_con, cub->mlx_win, x, y, color);
 }
 
-void put_square(t_cub *cub, int x, int y, int size)
+void put_square(t_cub *cub, int x, int y, int size, int color)
 {
 	
 	for (int  i = 0; i < size; i++)
-		put_pixel(cub, x + i , y, 0xff0000);
+		put_pixel(cub, x + i , y, color);
 	
 	for (int  i = 0; i < size; i++)
-		put_pixel(cub, x  , y + i, 0xff0000);
+		put_pixel(cub, x  , y + i, color);
 	
 	for (int  i = 0; i < size; i++)
-		put_pixel(cub, x + i  , y + size, 0xff0000);
+		put_pixel(cub, x + i  , y + size, color);
 
 	for (int  i = 0; i < size; i++)
-		put_pixel(cub, x + size , y + i, 0xff0000);
+		put_pixel(cub, x + size , y + i, color);
 }
 
 
@@ -101,7 +101,7 @@ void draw_map(t_cub *game)
     for(int y = 0; map[y]; y++)
         for(int x = 0; map[y][x]; x++)
             if(map[y][x] == '1')
-                put_square(game, x * BLOCK, y * BLOCK, BLOCK);
+                put_square(game, x * BLOCK, y * BLOCK, BLOCK, 0xff0000);
 }
 
 /* void draw_map(t_cub *cub)
@@ -125,9 +125,9 @@ void draw_map(t_cub *game)
 void move_player(t_cub *cub)
 {
 
-	float speed = 0.1;
+	float speed = 0.2;
 /*  */
-	float angle_speed = 0.03;
+	float angle_speed = 0.015;
 	float cos_angl = cos(cub->angle);
 	float sin_angl = sin(cub->angle);
 
@@ -165,9 +165,9 @@ void move_player(t_cub *cub)
 
 void clear_win(t_cub *cub)
 {
-	for (int i = 33; i < (BLOCK * 14); i++)
+	for (int i = BLOCK + 1; i < (BLOCK * 14); i++)
 	{
-		for (int j = 33; j < (BLOCK * 9); j++)
+		for (int j = BLOCK + 1; j < (BLOCK * 9); j++)
 		{
 			put_pixel(cub, i,j, 0x000000);
 		}
@@ -214,12 +214,12 @@ char **get_map(void)
 {
     char **map = malloc(sizeof(char *) * 11);
     map[0] = "111111111111111";
-    map[1] = "100000000100001";
-    map[2] = "100000000100001";
-    map[3] = "100000100100001";
-    map[4] = "100000000100001";
-    map[5] = "100000010000001";
-    map[6] = "100001000000001";
+    map[1] = "100000000000001";
+    map[2] = "100000000000001";
+    map[3] = "100000000000001";
+    map[4] = "100000000000001";
+    map[5] = "100000000000001";
+    map[6] = "100000000000001";
     map[7] = "100000000011001";
     map[8] = "100000000000001";
     map[9] = "111111111111111";
@@ -229,12 +229,8 @@ char **get_map(void)
 
 bool colision(float px, float py, t_cub *cub)
 {
-	int x = (int)(px / BLOCK);
-	int y = (int)(py / BLOCK);
-
-	// Ensure x and y are within bounds
-	//if (x < 0 || y < 0 || y >= HEIGH || x >= WIDTH)
-	//	return true; // Treat out-of-bounds as collision
+	int x = (px / BLOCK);
+	int y = (py / BLOCK);
 
 	if (cub->map[y][x] == '1')
 		return true;
@@ -242,55 +238,38 @@ bool colision(float px, float py, t_cub *cub)
 	return false;
 }
 
-/* bool colision(float px, float py, t_cub *cub)
+void draw_line(t_cub *cub, float angl_start, int i)
 {
-	int x = (int)px / BLOCK;
-	int y = (int)py / BLOCK;
-	if (cub->map[y][x] == '1')
-		return (true);
-	return false;
-} */
-
-void draw_line(t_cub *cub)
-{
-	float cos_ang = cos(cub->angle);
-	float sin_ang = sin(cub->angle);
+	
+	float cos_ang = cos(angl_start);
+	float sin_ang = sin(angl_start);
 	float rx = cub->px;
 	float ry = cub->py;
-	
-	put_pixel( cub,  rx, ry, 0x00FF00);
-//	while(!colision(rx, ry, cub))
-//	{
-//		rx += cos_ang;
-//		ry += sin_ang;
-//	}
+	while(!colision(rx, ry, cub))
+	{
+		put_pixel(cub, rx, ry , 0x00FFF0);
+		rx += cos_ang; 
+		ry += sin_ang; 
+	}
 }
 
 int draw_loop(t_cub *cub)
 {
 	move_player(cub);
 	clear_win(cub);
-	put_square(cub, cub->px,cub->py, BLOCK);
+	put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
 	draw_map(cub);
 	
-	
-	//float fract = PI / 3 / WIDTH;
-	//float start_x  =  cub->angle -  PI / 6;
-	//int i = -1;
-	
-	float rx = cub->px;
-	float ry = cub->py;
-	
-	//while(!colision(rx, ry, cub))
-	//{
-	float cos_ang = cos(cub->angle);
-	float sin_ang = sin(cub->angle);
-	for (size_t i = 0; i < 100; i++)
+	float fract = (PI / 3) / (WIDTH) ;//* 2;//* 10;// / WIDTH;
+	float start_x  =  cub->angle -  (PI / 6);
+	int i = 0; 
+	while(i < WIDTH)
 	{
-		put_pixel(cub, rx, ry , 0x00FFF0);
-		rx += cos_ang; 
-		ry += sin_ang; 
-	}
+		draw_line(cub, start_x, i);
+		start_x += fract; 
+		i++;
+	}	
+	
 		//draw_line(cub);
 		//cub->angle += 0.1;
 		//printf("%d", i);
