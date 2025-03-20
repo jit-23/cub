@@ -24,19 +24,34 @@
 #define A 97
 #define LEFT 65361
 #define RIGHT 65363
-
+#define LESS 45
+#define PLUSS 61
 #define BLOCK 25
 
 #define PI 3.14159
 
-#define WIDTH 15 * 25
-#define HEIGH 9 * 25
+#define WIDTH 400
+#define HEIGH 300
 #define PIXEL 32
 
+#define NORTH -(3.14159/2)
+#define SOUTH (3.14159/2)
+#define WEST -(3.14159)
+#define EAST (3.14159)
+/* static float calc_dist(float x,float y)
+{
+	return (sqrt(x*x+y*y));
+} */
 typedef struct s_cub
 {
+
+    char *img_address;
+    int bpp;
+    int size_line;
+    int endian;
     void *mlx_con;
     void *mlx_win;
+    void *img;
     int map_x;
     int map_y;
 
@@ -45,12 +60,18 @@ typedef struct s_cub
     int pos;
     char **map;
 
+    double dist;
 
+    float cos;
+    float sin;
     float px;
     float py;
     
     float angle;
 
+    float speed;
+    bool k_plus;
+    bool k_less;
     bool left_r;
     bool right_r;
     bool k_up;

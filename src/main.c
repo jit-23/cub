@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/03/17 04:13:47 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/03/19 22:41:59 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,9 @@ void clear_win(t_cub *cub);
 char **get_map(void);
 void draw_map(t_cub *game);
 void draw_line(t_cub *cub, float start_x, int i);
+void calculate_distance(t_cub *cub);
+void cast_rays(t_cub *cub);
+void put_pixel(t_cub *cub, int x, int y, int color);
 
 
 
@@ -40,16 +43,26 @@ void init_cub(t_cub *cub)
 	cub->px = WIDTH / 2;//(WIDTH) /2 ;
 	cub->py = HEIGH / 2;//(HEIGH) /2;
 
+	cub->angle  = PI/2;
+	
+	cub->speed = 2.5;
+	cub->angle = NORTH;
+	
+	cub->sin = 1;
+	cub->cos = 0;
+	
 	cub->k_up = false;
     cub->k_down = false;
     cub->k_left = false;
     cub->k_right = false;
-
+	cub->k_plus = false;
+	cub->k_less = false;
 	cub->left_r = false;
 	cub->right_r = false;
 
 	cub->map = get_map();
-
+	printf("asdasd\n");
+	printf("asdasd\n");
 	cub->fov = 0;
     cub->pos = 0;
     cub->direction = 0;
@@ -62,10 +75,18 @@ void exit_msg(t_cub *cub, char *str)
 	exit(1);
 }
 
-void put_pixel(t_cub *cub, int x, int y, int color)
+/* 
+void put_pixel(int x, int y, int color, t_game *game)
 {
-	mlx_pixel_put(cub->mlx_con, cub->mlx_win, x, y, color);
-}
+    if(x >= WIDTH || y >= HEIGHT || x < 0 || y < 0)
+        return;
+    
+    int index = y * game->size_line + x * game->bpp / 8;
+    game->data[index] = color & 0xFF;
+    game->data[index + 1] = (color >> 8) & 0xFF;
+    game->data[index + 2] = (color >> 16) & 0xFF;
+} */
+
 
 void put_square(t_cub *cub, int x, int y, int size, int color)
 {
@@ -88,10 +109,13 @@ void start_cub(t_cub *cub)
 {
     cub->mlx_con = mlx_init();
 	cub->mlx_win = mlx_new_window(cub->mlx_con,
-			(BLOCK * 15) + 1 , (BLOCK * 10) + 1, "so long");
+			(WIDTH) , HEIGH, "cub");
 	if (!cub->mlx_win)
 		exit_msg(cub, "Can't init win.\n");
 	mlx_hook(cub->mlx_win, 17, 0, (void *)close_window, cub);
+	cub->img = mlx_new_image(cub->mlx_con, WIDTH, HEIGH);
+	cub->img_address = mlx_get_data_addr(cub->img , &cub->bpp,  &cub->size_line, &cub->endian);
+	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->img, 0, 0);
 }
 
 void draw_map(t_cub *game)
@@ -120,14 +144,11 @@ void draw_map(t_cub *game)
 } */
 
 
-
-
 void move_player(t_cub *cub)
 {
 
-	float speed = 0.2;
 /*  */
-	float angle_speed = 0.015;
+	float angle_speed = 0.075;
 	float cos_angl = cos(cub->angle);
 	float sin_angl = sin(cub->angle);
 
@@ -143,39 +164,31 @@ void move_player(t_cub *cub)
 
 	if( (cub->k_up ) ) //&& (cub->py - speed > 0))
 	{
-		cub->px += cos_angl * speed;
-		cub->py += sin_angl * speed;
+		cub->px += cos_angl * cub->speed;
+		cub->py += sin_angl * cub->speed;
 	}
-	if( (cub->k_down) )//&& ( cub->py + speed  < (300)))
+	if( (cub->k_down) )//&& ( cub->py + cub->speed  < (300)))
 		{
-			cub->px -= cos_angl * speed;
-			cub->py -= sin_angl * speed;
+			cub->px -= cos_angl * cub->speed;
+			cub->py -= sin_angl * cub->speed;
 		}
-	if( (cub->k_right) )//&& (  cub->px + speed < (300)))
+	if( (cub->k_right) )//&& (  cub->px + cub->speed < (300)))
 		{
-			cub->px -= sin_angl * speed;
-			cub->py += cos_angl * speed;
+			cub->px -= sin_angl * cub->speed;
+			cub->py += cos_angl * cub->speed;
 		}
 	if( (cub->k_left) )//&& (cub->px - speed > 0 ))
 		{
-			cub->px += sin_angl * speed;
-			cub->py -= cos_angl * speed;
+			cub->px += sin_angl * cub->speed;
+			cub->py -= cos_angl * cub->speed;
 		}
 }
 
-void clear_win(t_cub *cub)
-{
-	for (int i = BLOCK + 1; i < (BLOCK * 14); i++)
-	{
-		for (int j = BLOCK + 1; j < (BLOCK * 9); j++)
-		{
-			put_pixel(cub, i,j, 0x000000);
-		}
-	}
-}
+
 
 int key_press(int kcode, t_cub *cub)
 {
+	printf("%d\n", kcode);
 	if (kcode == W)
 		cub->k_up = true;
 	if (kcode == S)
@@ -188,6 +201,10 @@ int key_press(int kcode, t_cub *cub)
 		cub->left_r = true;
 	if (kcode == RIGHT)
 		cub->right_r = true;
+	if(kcode == LESS)
+	    cub->speed-=0.3;//cub->right_r = true;
+	if(kcode == PLUSS)
+        cub->speed+=0.3;//cub->right_r = true;
 	if (kcode == 113 ||kcode == 65307) 
 		exit(1);
 	return 0;
@@ -207,6 +224,10 @@ int key_release(int kcode, t_cub *cub)
         cub->left_r = false;
     if(kcode == RIGHT)
         cub->right_r = false;
+	/* if(kcode == LESS)
+        cub->right_r = false;
+	if(kcode == PLUSS)
+        cub->right_r = false; */
     return 0;
 }
 
@@ -238,43 +259,126 @@ bool colision(float px, float py, t_cub *cub)
 	return false;
 }
 
+static float calc_dist(float x,float y)
+{
+	return (sqrt(x * x + y * y));
+}
+
+float distance(t_cub * cub,float x1 , float y1, float x2, float y2)
+{
+	float delta_x = x2 - x1;
+	float delta_y = y2 - y1;
+	float angle = atan2(delta_y, delta_x) - cub->angle;
+	float dist = (calc_dist(delta_x, delta_y) * cos(angle));
+	return (dist /* * cos(angle) */);
+}
 void draw_line(t_cub *cub, float angl_start, int i)
 {
 	
-	float cos_ang = cos(angl_start);
-	float sin_ang = sin(angl_start);
+	float cos_ang = cos(/* -PI/2 */angl_start);
+	float sin_ang = sin(/* -PI/2 */angl_start);
 	float rx = cub->px;
 	float ry = cub->py;
 	while(!colision(rx, ry, cub))
 	{
-		put_pixel(cub, rx, ry , 0x00FFF0);
+		/* if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
+		{
+			put_pixel(cub, rx, ry , 0x00FFF0);
+			printf("123\n");
+		}
+		if (cos_ang <= 0 && sin_ang >= 0) // 2Q
+		{
+			put_pixel(cub, rx, ry , 0xFFFF0F);
+			printf("2Q\n");
+		}
+		if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
+			put_pixel(cub, rx, ry , 0x00FFF);
+		if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
+			put_pixel(cub, rx, ry , 0x00FFFF); */
+		//printf("cos_ang %f\n", cos_ang);
+		//printf("sin_ang %f\n", sin_ang);
 		rx += cos_ang; 
 		ry += sin_ang; 
 	}
+	float dist = distance(cub, cub->px,cub->py, rx, ry);//sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
+//	float dist = sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
+	float heigh = (((BLOCK) / dist) * ((WIDTH) / 2));
+	float start_y = (HEIGH - heigh) / 2;
+	printf("start_y - %f\n", start_y);
+	float end = start_y + heigh;
+	printf("end - %f\n", end);
+	while(start_y < end)
+	{
+		if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
+			put_pixel(cub, i, start_y , 0xF0F0F);
+		if (cos_ang <= 0 && sin_ang >= 0) // 2Q
+			put_pixel(cub, i, start_y , 0xFF);
+		if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
+			put_pixel(cub, i, start_y , 0xFF0F);
+		if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
+			put_pixel(cub, i, start_y , 0xFF0FF);
+		//put_pixel(cub, i, start_y, 0xFF000F);
+		start_y++;
+	}
 }
 
-int draw_loop(t_cub *cub)
+
+
+void cast_rays(t_cub *cub)
 {
-	move_player(cub);
-	clear_win(cub);
-	put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
-	draw_map(cub);
-	
 	float fract = (PI / 3) / (WIDTH) ;//* 2;//* 10;// / WIDTH;
 	float start_x  =  cub->angle -  (PI / 6);
 	int i = 0; 
 	while(i < WIDTH)
 	{
+		//if (i%95 == 0)
 		draw_line(cub, start_x, i);
-		start_x += fract; 
+		start_x += fract;
 		i++;
-	}	
+	}
+}
+
+
+void put_pixel(t_cub *cub, int x, int y, int color)
+{
+	if(x >= WIDTH || y >= HEIGH || x < 0 || y < 0)
+        return;
+	int index = y * cub->size_line + x * cub->bpp / 8;
+//	mlx_pixel_put(cub->mlx_con, cub->mlx_win, x, y, color);
+	cub->img_address[index] = color & 0xFF;
+    cub->img_address[index + 1] = (color >> 8) & 0xFF;
+    cub->img_address[index + 2] = (color >> 16) & 0xFF;
+
+}
+
+void clear_win(t_cub *cub)
+{
 	
-		//draw_line(cub);
-		//cub->angle += 0.1;
-		//printf("%d", i);
+	//mlx_clear_window(cub->mlx_con,cub->mlx_win);
+ usleep(50000);
+	for (int i = 0; i < (WIDTH); i++)
+	{
+		for (int j = 0; j < (HEIGH); j++)
+		{
+			put_pixel(cub, i,j, 0);
+		}
+	}
+
+}
+
+int draw_loop(t_cub *cub)
+{
+	//usleep(166667);
+	clear_win(cub);
+	move_player(cub);
+	//put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
+	//draw_map(cub);
+	cast_rays(cub);
+	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->img, 0, 0);
+
 	return 0;
 }
+
 
 int main(int ac, char *av[])
 {
