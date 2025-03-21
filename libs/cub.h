@@ -30,8 +30,8 @@
 
 #define PI 3.14159
 
-#define WIDTH 400
-#define HEIGH 300
+#define WIDTH 800
+#define HEIGH 600
 #define PIXEL 32
 
 #define NORTH -(3.14159/2)

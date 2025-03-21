@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/03/19 22:41:59 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/03/21 18:23:18 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ void close_window(void)
 void init_cub(t_cub *cub)
 {
 
-	cub->px = WIDTH / 2;//(WIDTH) /2 ;
-	cub->py = HEIGH / 2;//(HEIGH) /2;
+	cub->px = WIDTH / 12;//(WIDTH) /2 ;
+	cub->py = HEIGH / 12;//(HEIGH) /2;
 
 	cub->angle  = PI/2;
 	
@@ -61,8 +61,6 @@ void init_cub(t_cub *cub)
 	cub->right_r = false;
 
 	cub->map = get_map();
-	printf("asdasd\n");
-	printf("asdasd\n");
 	cub->fov = 0;
     cub->pos = 0;
     cub->direction = 0;
@@ -148,7 +146,7 @@ void move_player(t_cub *cub)
 {
 
 /*  */
-	float angle_speed = 0.075;
+	float angle_speed = 0.1;
 	float cos_angl = cos(cub->angle);
 	float sin_angl = sin(cub->angle);
 
@@ -202,9 +200,9 @@ int key_press(int kcode, t_cub *cub)
 	if (kcode == RIGHT)
 		cub->right_r = true;
 	if(kcode == LESS)
-	    cub->speed-=0.3;//cub->right_r = true;
+	    cub->speed-=2;//cub->right_r = true;
 	if(kcode == PLUSS)
-        cub->speed+=0.3;//cub->right_r = true;
+        cub->speed+=2;//cub->right_r = true;
 	if (kcode == 113 ||kcode == 65307) 
 		exit(1);
 	return 0;
@@ -233,18 +231,26 @@ int key_release(int kcode, t_cub *cub)
 
 char **get_map(void)
 {
-    char **map = malloc(sizeof(char *) * 11);
-    map[0] = "111111111111111";
-    map[1] = "100000000000001";
-    map[2] = "100000000000001";
-    map[3] = "100000000000001";
-    map[4] = "100000000000001";
-    map[5] = "100000000000001";
-    map[6] = "100000000000001";
-    map[7] = "100000000011001";
-    map[8] = "100000000000001";
-    map[9] = "111111111111111";
-    map[10] = NULL;
+    char **map = malloc(sizeof(char *) * 22);
+    map[0] = "111111111111111111111111111111";
+    map[1] = "100000000000000000000000000011";
+    map[2] = "100000000000000000000000000011";
+    map[3] = "100000000000000000000000000011";
+    map[4] = "100000000000000000000000000011";
+    map[5] = "100000000000000000000000000011";
+    map[6] = "100000000000000000000000000011";
+    map[7] = "100000000000000000000000000011";
+    map[8] = "100000000000000000000000000011";
+    map[9] = "100000000000000000000000000011";
+    map[10] = "100000000000000000000000000011";
+    map[11] = "100000000000000000000000000011";
+    map[12] = "100000000000000000000000000011";
+    map[13] = "100000000000000000000000000011";
+    map[14] = "100000000000000000000000000011";
+    map[15] = "100000000000000000000000000011";
+    map[16] = "100000000000000000000000000011";
+    map[17] = "111111111111111111111111111111";
+    map[18] = NULL;
     return (map);
 }
 
@@ -272,70 +278,158 @@ float distance(t_cub * cub,float x1 , float y1, float x2, float y2)
 	float dist = (calc_dist(delta_x, delta_y) * cos(angle));
 	return (dist /* * cos(angle) */);
 }
+
 void draw_line(t_cub *cub, float angl_start, int i)
 {
-	
 	float cos_ang = cos(/* -PI/2 */angl_start);
-	float sin_ang = sin(/* -PI/2 */angl_start);
-	float rx = cub->px;
-	float ry = cub->py;
-	while(!colision(rx, ry, cub))
+float sin_ang = sin(/* -PI/2 */angl_start);
+float rx = cub->px;
+float ry = cub->py;
+while(!colision(rx, ry, cub))
+{
+	/* if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
 	{
-		/* if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
-		{
-			put_pixel(cub, rx, ry , 0x00FFF0);
-			printf("123\n");
-		}
-		if (cos_ang <= 0 && sin_ang >= 0) // 2Q
-		{
-			put_pixel(cub, rx, ry , 0xFFFF0F);
-			printf("2Q\n");
-		}
-		if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
-			put_pixel(cub, rx, ry , 0x00FFF);
-		if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
-			put_pixel(cub, rx, ry , 0x00FFFF); */
-		//printf("cos_ang %f\n", cos_ang);
-		//printf("sin_ang %f\n", sin_ang);
-		rx += cos_ang; 
-		ry += sin_ang; 
+		put_pixel(cub, rx, ry , 0x00FFF0);
+		printf("123\n");
 	}
-	float dist = distance(cub, cub->px,cub->py, rx, ry);//sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
-//	float dist = sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
-	float heigh = (((BLOCK) / dist) * ((WIDTH) / 2));
-	float start_y = (HEIGH - heigh) / 2;
-	printf("start_y - %f\n", start_y);
-	float end = start_y + heigh;
-	printf("end - %f\n", end);
-	while(start_y < end)
+	if (cos_ang <= 0 && sin_ang >= 0) // 2Q
 	{
-		if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
-			put_pixel(cub, i, start_y , 0xF0F0F);
-		if (cos_ang <= 0 && sin_ang >= 0) // 2Q
-			put_pixel(cub, i, start_y , 0xFF);
-		if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
-			put_pixel(cub, i, start_y , 0xFF0F);
-		if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
-			put_pixel(cub, i, start_y , 0xFF0FF);
-		//put_pixel(cub, i, start_y, 0xFF000F);
-		start_y++;
+		put_pixel(cub, rx, ry , 0xFFFF0F);
+		printf("2Q\n");
 	}
+	if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
+		put_pixel(cub, rx, ry , 0x00FFF);
+	if (cos_ang >= 0 && sin_ang <= 0) // 4Q */
+		//put_pixel(cub, rx, ry , 0x00FFFF); 
+	//printf("cos_ang %f\n", cos_ang);
+	//printf("sin_ang %f\n", sin_ang);
+	rx += cos_ang * 0.05; 
+	ry += sin_ang * 0.05; 
 }
+float dist = distance(cub, cub->px,cub->py, rx, ry);//sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
+//	float dist = sqrt(((rx - cub->px) * (rx - cub->px)) + ((ry - cub->py) * (ry - cub->py)));
+float heigh = (((BLOCK) / dist) * ((WIDTH) / 2));
+float start_y = (HEIGH - heigh) / 2;
+//printf("start_y - %f\n", start_y);
+float end = start_y + heigh;
+///printf("end - %f\n", end);
+while(start_y < end)
+{
+	if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
+		put_pixel(cub, i, start_y , 0xF0F0F);
+	if (cos_ang <= 0 && sin_ang >= 0) // 2Q
+		put_pixel(cub, i, start_y , 0xFF);
+	if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
+		put_pixel(cub, i, start_y , 0xFF0F);
+	if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
+		put_pixel(cub, i, start_y , 0xFF0FF);
+	//put_pixel(cub, i, start_y, 0xFF000F);
+	start_y++;
+}
+}
+
+/* void draw_line(t_cub *cub, float angl_start, int i)
+{
+ // **Player Position**
+ int mapX = (int)cub->px;  
+ int mapY = (int)cub->py;  
+
+ // **Ray Direction**
+ float rayDirX = cos(angl_start);
+ float rayDirY = sin(angl_start);
+
+ // **Step sizes**
+ float deltaDistX = fabs(1 / rayDirX);
+ float deltaDistY = fabs(1 / rayDirY);
+
+ // **Calculate Initial Side Distances**
+ float sideDistX, sideDistY;
+ int stepX, stepY;
+
+ if (rayDirX < 0) {  
+	 stepX = -1;
+	 sideDistX = (cub->px - mapX) * deltaDistX;
+ } else {
+	 stepX = 1;
+	 sideDistX = (mapX + 1.0 - cub->px) * deltaDistX;
+ }
+
+ if (rayDirY < 0) {
+	 stepY = -1;
+	 sideDistY = (cub->py - mapY) * deltaDistY;
+ } else {
+	 stepY = 1;
+	 sideDistY = (mapY + 1.0 - cub->py) * deltaDistY;
+ }
+
+ // **DDA Raycasting Loop**
+ int hit = 0;
+ int side; // 0 = X wall, 1 = Y wall
+ while (hit == 0) {
+	 // Move in the direction of the shortest step
+	 if (sideDistX < sideDistY) {
+		 sideDistX += deltaDistX;
+		 mapX += stepX;
+		 side = 0;
+	 } else {
+		 sideDistY += deltaDistY;
+		 mapY += stepY;
+		 side = 1;
+	 }
+
+	 // Check for a collision (wall hit)
+	 if (colision(mapX, mapY, cub)) {
+		 hit = 1;
+	 }
+ }
+
+ // **Calculate Distance to Wall**
+ float perpWallDist;
+ if (side == 0)
+	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
+ else
+	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY;
+
+ // **Wall Height Calculation**
+ perpWallDist *= cos(angl_start - cub->angle); // Correct for fish-eye effect
+ float lineHeight = (BLOCK / perpWallDist) * (HEIGH / 2);
+
+ // **Determine Start and End Points for the Vertical Line**
+ float drawStart = (HEIGH - lineHeight) / 2;
+ float drawEnd = drawStart + lineHeight;
+
+ // **Draw the Wall Column**
+ for (float y = drawStart; y < drawEnd; y++) {
+	 put_pixel(cub, i, y, 0xFF000F);
+ }
+} */
+
+
 
 
 
 void cast_rays(t_cub *cub)
 {
-	float fract = (PI / 3) / (WIDTH) ;//* 2;//* 10;// / WIDTH;
+
+	float fraction = PI / 3 / WIDTH;
+    float start_x = cub->angle - PI / 6;
+    int i = 0;
+    while(i < WIDTH)
+    {
+        draw_line(cub,  start_x, i);
+        start_x += fraction;
+        i++;
+    }
+	/* float fract = (PI / 3) / (WIDTH) ;//* 2;//* 10;// / WIDTH;
+	printf("cub->angle = %f\n", cub->angle);
 	float start_x  =  cub->angle -  (PI / 6);
-	int i = 0; 
+	float i = 0; 
 	while(i < WIDTH)
 	{
-		//if (i%95 == 0)
 		draw_line(cub, start_x, i);
 		start_x += fract;
 		i++;
-	}
+	} */
 }
 
 
@@ -378,6 +472,7 @@ int draw_loop(t_cub *cub)
 
 	return 0;
 }
+
 
 
 int main(int ac, char *av[])
