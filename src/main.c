@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/03/21 18:29:59 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/03/24 16:06:16 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -338,22 +338,24 @@ while(start_y < end)
  float rayDirX = cos(angl_start);
  float rayDirY = sin(angl_start);
 
- // **Step sizes**
+// **Step sizes**
  float deltaDistX = fabs(1 / rayDirX);
- float deltaDistY = fabs(1 / rayDirY);
+ float deltaDistY = fabs(1 / rayDirY);	// conseguir o valor absoluto do percurso que o RAIO  do  x/y tem que
+ 										// percorrer para avancar 1 tile no grafico cartesiano.
 
- // **Calculate Initial Side Distances**
- float sideDistX, sideDistY;
- int stepX, stepY;
+/// **Calculate Initial Side Distances**
+float sideDistX, sideDistY; // valores que x e y tem que percorrer para o RAIO dar o valor certo e bater 
+// no vertice do tile seguinte 
+int stepX, stepY; // valor positivo ou negativo para diferenciar o lado certo a percorrer
 
- if (rayDirX < 0) {  
-	 stepX = -1;
-	 sideDistX = (cub->px - mapX) * deltaDistX;
+if (rayDirX < 0) {  
+	stepX = -1;
+	sideDistX = (cub->px - mapX) * deltaDistX;
  } else {
 	 stepX = 1;
 	 sideDistX = (mapX + 1.0 - cub->px) * deltaDistX;
- }
-
+}
+	 
  if (rayDirY < 0) {
 	 stepY = -1;
 	 sideDistY = (cub->py - mapY) * deltaDistY;
@@ -361,22 +363,21 @@ while(start_y < end)
 	 stepY = 1;
 	 sideDistY = (mapY + 1.0 - cub->py) * deltaDistY;
  }
-
+ 
  // **DDA Raycasting Loop**
  int hit = 0;
  int side; // 0 = X wall, 1 = Y wall
  while (hit == 0) {
 	 // Move in the direction of the shortest step
-	 if (sideDistX < sideDistY) {
+	if (sideDistX < sideDistY) {
 		 sideDistX += deltaDistX;
 		 mapX += stepX;
 		 side = 0;
-	 } else {
+	} else {
 		 sideDistY += deltaDistY;
 		 mapY += stepY;
 		 side = 1;
-	 }
-
+	}
 	 // Check for a collision (wall hit)
 	 if (colision(mapX, mapY, cub)) {
 		 hit = 1;
