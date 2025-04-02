@@ -42,9 +42,22 @@
 {
 	return (sqrt(x*x+y*y));
 } */
+
+typedef struct s_img
+{
+    void *img;
+    char *addr;
+    int x;
+    int y;
+    int bpp;
+    int size_line;
+    int endian;
+
+}t_img;
+
 typedef struct s_cub
 {
-
+    
     char *img_address;
     int bpp;
     int size_line;
@@ -70,6 +83,7 @@ typedef struct s_cub
     float angle;
 
     float speed;
+
     bool k_plus;
     bool k_less;
     bool left_r;
@@ -81,6 +95,7 @@ typedef struct s_cub
 
     int direction;
 
+    t_img imgs[2];
 }t_cub;
  
 

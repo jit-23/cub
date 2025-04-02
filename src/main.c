@@ -6,12 +6,13 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/03/24 16:06:16 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/02 07:40:20 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libs/cub.h"
 #include "../libs/mlx/mlx.h"
+
 
 
 void start_cub(t_cub *cub);
@@ -30,22 +31,72 @@ void calculate_distance(t_cub *cub);
 void cast_rays(t_cub *cub);
 void put_pixel(t_cub *cub, int x, int y, int color);
 
-
-
 void close_window(void)
 {
 	exit(0);
+}
+void start_cub(t_cub *cub)
+{
+    cub->mlx_con = mlx_init();
+	cub->mlx_win = mlx_new_window(cub->mlx_con,
+			(WIDTH) , HEIGH, "cub");
+	if (!cub->mlx_win)
+		exit_msg(cub, "Can't init win.\n");
+	
+mlx_hook(cub->mlx_win, 17, 0, (void *)close_window, cub);
+	cub->img = mlx_new_image(cub->mlx_con, WIDTH, HEIGH);
+	cub->img_address = mlx_get_data_addr(cub->img , &cub->bpp,  &cub->size_line, &cub->endian);
+	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->img, 0, 0);
+	//cub->imgs[0].x = 0;
+	//cub->imgs[0].y = 0;
+	
+	if (!(cub->imgs[0].x))
+		perror("non existent");
+	if (!(cub->imgs[0].y))
+		perror("non existent");
+	if (access("textures/grass.xpm", F_OK) == -1)
+		perror("File access error");
+	else
+		printf("done \n");
+	cub->imgs[0].x = 0;
+	cub->imgs[0].x = 0;
+	printf("x - %d\n", cub->imgs[0].x);
+	printf("y - %d\n", cub->imgs[0].y);
+	//printf("%p\n", mlx_xpm_file_to_image(cub->mlx_con, "../textures/grass.xpm", &(cub->imgs[1].x), &(cub->imgs[1].y)));
+	
+	printf("");
+	cub->imgs[0].img = mlx_xpm_file_to_image(cub->mlx_con, "textures/txt.xpm", &(cub->imgs[1].x), &(cub->imgs[1].y));
+	printf("------__>%p\n", cub->imgs[0].img);
+	if (!cub->imgs[0].img)  // Check if image was loaded
+	{
+		printf("Error: Failed to load texture '../textures/grass.xpm'\n");
+		exit(1);
+	}
+	printf("Texture loaded successfully\n");
+	  
+	cub->imgs[0].addr = mlx_get_data_addr(cub->imgs[0].img, &cub->imgs[0].bpp, &cub->imgs[0].size_line, &cub->imgs[0].endian);
+	//cub->imgs[1].img = mlx_xpm_file_to_image(cub->mlx_con, "../egg/grass.xpm", &(cub->imgs[1].x), &(cub->imgs[1].y));
+	if (!cub->imgs[0].addr)
+	{
+		printf("%p\n",cub->imgs[0].addr);
+	}
 }
 
 void init_cub(t_cub *cub)
 {
 
-	cub->px = WIDTH / 12;//(WIDTH) /2 ;
-	cub->py = HEIGH / 12;//(HEIGH) /2;
+		//if (!cub->imgs)
+		//{
+		//	printf("Memory allocation failed\n");
+		//	exit(1);
+		//}
+		
+			cub->px = WIDTH / 12;//(WIDTH) /2;
+	cub->py = HEIGH / 12;//(HEIGH) /2; 
 
 	cub->angle  = PI/2;
 	
-	cub->speed = 2.5;
+	cub->speed = 0.5;
 	cub->angle = NORTH;
 	
 	cub->sin = 1;
@@ -103,18 +154,7 @@ void put_square(t_cub *cub, int x, int y, int size, int color)
 }
 
 
-void start_cub(t_cub *cub)
-{
-    cub->mlx_con = mlx_init();
-	cub->mlx_win = mlx_new_window(cub->mlx_con,
-			(WIDTH) , HEIGH, "cub");
-	if (!cub->mlx_win)
-		exit_msg(cub, "Can't init win.\n");
-	mlx_hook(cub->mlx_win, 17, 0, (void *)close_window, cub);
-	cub->img = mlx_new_image(cub->mlx_con, WIDTH, HEIGH);
-	cub->img_address = mlx_get_data_addr(cub->img , &cub->bpp,  &cub->size_line, &cub->endian);
-	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->img, 0, 0);
-}
+
 
 void draw_map(t_cub *game)
 {
@@ -146,7 +186,7 @@ void move_player(t_cub *cub)
 {
 
 /*  */
-	float angle_speed = 0.1;
+	float angle_speed = 0.01;
 	float cos_angl = cos(cub->angle);
 	float sin_angl = sin(cub->angle);
 
@@ -276,18 +316,18 @@ float distance(t_cub * cub,float x1 , float y1, float x2, float y2)
 	float delta_y = y2 - y1;
 	float angle = atan2(delta_y, delta_x) - cub->angle;
 	float dist = (calc_dist(delta_x, delta_y) * cos(angle));
-	return (dist /* * cos(angle) */);
+	return (dist);
 }
-
+/* 
 void draw_line(t_cub *cub, float angl_start, int i)
 {
-	float cos_ang = cos(/* -PI/2 */angl_start);
-float sin_ang = sin(/* -PI/2 */angl_start);
+	float cos_ang = cos(angl_start);
+float sin_ang = sin(angl_start);
 float rx = cub->px;
 float ry = cub->py;
 while(!colision(rx, ry, cub))
 {
-	/* if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
+	 if (cos_ang >= 0 && sin_ang >= 0) //  1Q 
 	{
 		put_pixel(cub, rx, ry , 0x00FFF0);
 		printf("123\n");
@@ -299,7 +339,7 @@ while(!colision(rx, ry, cub))
 	}
 	if (cos_ang <= 0 && sin_ang <= 0) // 3Q 
 		put_pixel(cub, rx, ry , 0x00FFF);
-	if (cos_ang >= 0 && sin_ang <= 0) // 4Q */
+	if (cos_ang >= 0 && sin_ang <= 0) // 4Q 
 		//put_pixel(cub, rx, ry , 0x00FFFF); 
 	//printf("cos_ang %f\n", cos_ang);
 	//printf("sin_ang %f\n", sin_ang);
@@ -326,17 +366,18 @@ while(start_y < end)
 	//put_pixel(cub, i, start_y, 0xFF000F);
 	start_y++;
 }
-}
+} */
 
-/* void draw_line(t_cub *cub, float angl_start, int i)
+void draw_line(t_cub *cub, float angl_start, int i)
 {
  // **Player Position**
  int mapX = (int)cub->px;  
  int mapY = (int)cub->py;  
 
- // **Ray Direction**
- float rayDirX = cos(angl_start);
- float rayDirY = sin(angl_start);
+
+// **Ray Direction**
+float rayDirX = cos(angl_start);
+float rayDirY = sin(angl_start);
 
 // **Step sizes**
  float deltaDistX = fabs(1 / rayDirX);
@@ -348,23 +389,26 @@ float sideDistX, sideDistY; // valores que x e y tem que percorrer para o RAIO d
 // no vertice do tile seguinte 
 int stepX, stepY; // valor positivo ou negativo para diferenciar o lado certo a percorrer
 
-if (rayDirX < 0) {  
-	stepX = -1;
+if (rayDirX < 0) { //esquerda
+	stepX = -1; // valor para 
 	sideDistX = (cub->px - mapX) * deltaDistX;
  } else {
 	 stepX = 1;
 	 sideDistX = (mapX + 1.0 - cub->px) * deltaDistX;
 }
-	 
- if (rayDirY < 0) {
-	 stepY = -1;
-	 sideDistY = (cub->py - mapY) * deltaDistY;
- } else {
-	 stepY = 1;
-	 sideDistY = (mapY + 1.0 - cub->py) * deltaDistY;
+
+if (rayDirY < 0)
+	{
+		stepY = -1; // baixo
+		sideDistY = (cub->py - mapY) * deltaDistY;
+	} 
+else {
+	stepY = 1; // cima
+	sideDistY = (mapY + 1.0 - cub->py) * deltaDistY;
  }
  
  // **DDA Raycasting Loop**
+
  int hit = 0;
  int side; // 0 = X wall, 1 = Y wall
  while (hit == 0) {
@@ -384,8 +428,8 @@ if (rayDirX < 0) {
 	 }
  }
 
- // **Calculate Distance to Wall**
- float perpWallDist;
+// **Calculate Distance to Wall**
+ float perpWallDist;	
  if (side == 0)
 	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
  else
@@ -399,11 +443,30 @@ if (rayDirX < 0) {
  float drawStart = (HEIGH - lineHeight) / 2;
  float drawEnd = drawStart + lineHeight;
 
- // **Draw the Wall Column**
- for (float y = drawStart; y < drawEnd; y++) {
-	 put_pixel(cub, i, y, 0xFF000F);
- }
-} */
+// **Draw the Wall Column**
+
+
+double xwall = mapY + perpWallDist * rayDirY;
+xwall -= floor(xwall);
+int texX=  (int) (xwall * (double)cub->imgs[0].x);
+if (( rayDirX > 0) || ( rayDirY < 0))
+	texX = cub->imgs[0].x - texX - 1;
+
+int y = drawStart;
+while(y < drawEnd)
+{
+	int distt = y*256 - HEIGH * 128 + cub->imgs[0].size_line * 128}
+	int texY = ((d * cub->imgs[0].))
+
+// for (float y = drawStart ; y < drawEnd; y++) {
+//		put_pixel(cub, i, y, 0xFF000F);
+//	}
+
+
+
+}
+
+
 
 
 
@@ -421,7 +484,7 @@ void cast_rays(t_cub *cub)
         start_x += fraction;
         i++;
     }
-	/* float fract = (PI / 3) / (WIDTH) ;//* 2;//* 10;// / WIDTH;
+	/* float fract = (PI / 3) / (WIDTH) ;
 	printf("cub->angle = %f\n", cub->angle);
 	float start_x  =  cub->angle -  (PI / 6);
 	float i = 0; 
@@ -450,7 +513,6 @@ void clear_win(t_cub *cub)
 {
 	
 	//mlx_clear_window(cub->mlx_con,cub->mlx_win);
- usleep(50000);
 	for (int i = 0; i < (WIDTH); i++)
 	{
 		for (int j = 0; j < (HEIGH); j++)
@@ -474,8 +536,6 @@ int draw_loop(t_cub *cub)
 	return 0;
 }
 
-
-
 int main(int ac, char *av[])
 {
     t_cub	cub;
@@ -483,7 +543,6 @@ int main(int ac, char *av[])
 		return (ft_putstr_fd(2, "Error: Wrong nbr of args\n"), 1);
 	init_cub(&cub);
 	start_cub(&cub);
-
 	//put_square(&cub,(WIDTH * PIXEL) / 2 , (HEIGH * PIXEL) / 2);
 	mlx_hook(cub.mlx_win,2, 1L<<0, key_press, &cub);
 	mlx_hook(cub.mlx_win,3, 1L<<1, key_release, &cub);
