@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/02 07:40:20 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/02 19:08:34 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,15 +58,17 @@ mlx_hook(cub->mlx_win, 17, 0, (void *)close_window, cub);
 		perror("File access error");
 	else
 		printf("done \n");
-	cub->imgs[0].x = 0;
-	cub->imgs[0].x = 0;
-	printf("x - %d\n", cub->imgs[0].x);
-	printf("y - %d\n", cub->imgs[0].y);
 	//printf("%p\n", mlx_xpm_file_to_image(cub->mlx_con, "../textures/grass.xpm", &(cub->imgs[1].x), &(cub->imgs[1].y)));
 	
-	printf("");
-	cub->imgs[0].img = mlx_xpm_file_to_image(cub->mlx_con, "textures/txt.xpm", &(cub->imgs[1].x), &(cub->imgs[1].y));
-	printf("------__>%p\n", cub->imgs[0].img);
+	cub->imgs[0].img = mlx_xpm_file_to_image(cub->mlx_con, "textures/Fox.xpm", &(cub->imgs[0].x), &(cub->imgs[0].y));
+	printf("%p\n", cub->imgs[0].img);
+	printf("%d\n", cub->imgs[0].x);
+	printf("%d\n", cub->imgs[0].y);
+	/* OUTPUT :
+	 0x102ae300
+	 3632
+	 0
+ 	*/
 	if (!cub->imgs[0].img)  // Check if image was loaded
 	{
 		printf("Error: Failed to load texture '../textures/grass.xpm'\n");
@@ -368,6 +370,14 @@ while(start_y < end)
 }
 } */
 
+static void my_mlx_pixel_put(t_img *img, int x, int y, int color)
+{
+    char *dst;
+
+    dst = img->addr + (y * img->size_line + x * (img->bpp / 8));
+    *(unsigned int*)dst = color;
+}
+
 void draw_line(t_cub *cub, float angl_start, int i)
 {
  // **Player Position**
@@ -447,16 +457,35 @@ else {
 
 
 double xwall = mapY + perpWallDist * rayDirY;
+
 xwall -= floor(xwall);
+printf("xwall - %f\n", xwall);
+printf("%d\n");
+
 int texX=  (int) (xwall * (double)cub->imgs[0].x);
 if (( rayDirX > 0) || ( rayDirY < 0))
 	texX = cub->imgs[0].x - texX - 1;
-
+printf("texX - %d\n", texX);
+/* for (int x = 0; x < screenWidth; x++) // Loop over screen columns
+{
+    // Perform raycasting to determine wall hit
+    // Compute texture coordinates and draw the column at 'x'
+} */
 int y = drawStart;
 while(y < drawEnd)
 {
-	int distt = y*256 - HEIGH * 128 + cub->imgs[0].size_line * 128}
-	int texY = ((d * cub->imgs[0].))
+	int d = y*256 - HEIGH * 128 + cub->imgs[0].size_line * 128;
+	int texY = ((d * cub->imgs[0].y) / HEIGH) / 256;
+    
+	printf("addr = %p\n",cub->imgs[0].addr );
+	printf("sum - %d\n", (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8)));
+	printf("texY= %d\n", texY);
+	printf("cub->imgs[0].size_line= %d\n", cub->imgs[0].size_line);
+	printf("texX= %d\n", texX);
+	printf("cub->imgs[0].bpp / 8= %d\n", cub->imgs[0].bpp / 8);
+	int color = *(int *)(cub->imgs[0].addr + (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8)));
+	printf("assdadsasdasadasdasd");
+	my_mlx_pixel_put(&cub->imgs[0], i, y, color);
 
 // for (float y = drawStart ; y < drawEnd; y++) {
 //		put_pixel(cub, i, y, 0xFF000F);
@@ -464,6 +493,7 @@ while(y < drawEnd)
 
 
 
+}
 }
 
 
