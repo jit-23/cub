@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   main2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/06 22:07:58 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/06 15:21:23 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,55 +435,42 @@ else {
 		 hit = 1;
 	 }
  }
+
+// **Calculate Distance to Wall**
  float perpWallDist;	
+ if (side == 0)
+	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
+ else
+	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY;
 
-  //Calculate distance of perpendicular ray (Euclidean distance would give fisheye effect!)
-  if(side == 0) perpWallDist = (sideDistX - deltaDistX);
-  else          perpWallDist = (sideDistY - deltaDistY);
+ // **Wall Height Calculation**
+ perpWallDist *= cos(angl_start - cub->angle); // Correct for fish-eye effect
+ float lineHeight = (BLOCK / perpWallDist) * (HEIGH / 2);
 
-  //Calculate height of line to draw on screen
-  int lineHeight = (int)(HEIGH / perpWallDist);
+ // **Determine Start and End Points for the Vertical Line**
+ float drawStart = (HEIGH - lineHeight) / 2;
+ float drawEnd = drawStart + lineHeight;
 
-  //calculate lowest and highest pixel to fill in current stripe
-  int drawStart = -lineHeight / 2 + HEIGH / 2;
-  if(drawStart < 0) drawStart = 0;
-  int drawEnd = lineHeight / 2 + HEIGH / 2;
-  if(drawEnd >= HEIGH) drawEnd = HEIGH - 1;
-  //texturing calculations
-  int texNum = cub->map[mapX][mapY] - 1; //1 subtracted from it so that texture 0 can be used!
+// **Draw the Wall Column**
 
-  //calculate value of wallX
-  double wallX; //where exactly the wall was hit
-  if (side == 0) wallX = mapY + perpWallDist * rayDirY;
-  else           wallX = mapX + perpWallDist * rayDirX;
-  wallX -= floor((wallX));
 
-  //x coordinate on the texture
-  int texWidth  = 32;
-  int texHeight  = 32;
-  int texX = (wallX * ((double)texWidth));
-  if(side == 0 && rayDirX > 0) texX = texWidth - texX - 1;
-  if(side == 1 && rayDirY < 0) texX = texWidth - texX - 1;
+double xwall = mapY + perpWallDist * rayDirY;
 
-  // How much to increase the texture coordinate per screen pixel
-  double step = 1.0 * texHeight / lineHeight;
-  // Starting texture coordinate
-  double texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * step;
-  for(int y = drawStart; y<drawEnd; y++)
-  {
-	// Cast the texture coordinate to integer, and mask with (texHeight - 1) in case of overflow
-	int texY = (int)texPos & (texHeight - 1);
-	texPos += step;
+xwall -= floor(xwall);
 
+int texX=  (int) (xwall * (double)cub->imgs[0].x);
+if (( rayDirX > 0) || ( rayDirY < 0))
+	texX = cub->imgs[0].x - texX - 1;
+int y = drawStart;
+while(y < drawEnd)
+{
+	int d = y*256 - HEIGH * 128 + cub->imgs[0].size_line * 128;
+	int texY = ((d * cub->imgs[0].y) / HEIGH) / 256;
 	
-	
-	int color = *(int *)(cub->imgs[0].addr + texWidth * texY + texX);
-	//int color = *(int *) cub->imgs[0].addr/* texture[texNum][texWidth * texY + texX] */;
-	//make color darker for y-sides: R, G and B byte each divided through two with a "shift" and an "and"
-	//if(side == 1) color = (color >> 1) & 8355711;
-	//buffer[y][x] = color;
-	
-}
+	int color = *(int *)(cub->imgs[0].addr + (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8)));
+	printf("%d\n", color);
+	my_mlx_pixel_put(&cub->imgs[0], i, y, color);
+	y++;
 
 }
 }

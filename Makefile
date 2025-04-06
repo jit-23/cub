@@ -7,7 +7,7 @@ RED:=\033[0;31m
 BLUE=\033[0;34m
 default_colour=\033[0m
 
-SRC_FILES:=  main.c 
+SRC_FILES:=  main3.c 
 
 MAKE:= make -j -C
 LIBFT_DIR:= libs/libft
