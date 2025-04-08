@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:05:05 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/06 22:07:58 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/08 01:19:48 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,8 +93,8 @@ void init_cub(t_cub *cub)
 		//	exit(1);
 		//}
 		
-			cub->px = WIDTH / 12;//(WIDTH) /2;
-	cub->py = HEIGH / 12;//(HEIGH) /2; 
+			cub->px = WIDTH / 2;//(WIDTH) /2;
+	cub->py = HEIGH / 2;//(HEIGH) /2; 
 
 	cub->angle  = PI/2;
 	

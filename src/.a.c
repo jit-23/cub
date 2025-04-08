@@ -116,3 +116,81 @@ int main()
     return (0);
 }
 
+//////////////////////////////
+
+  //start the main loop
+  while(!done())
+  {
+    for(int x = 0; x < w; x++)
+    {
+      //which box of the map we're in
+      int mapX = int(posX);
+      int mapY = int(posY);
+      //calculate ray position and direction
+      double cameraX = 2*x/double(w)-1; //x-coordinate in camera space
+      double rayDirX = dirX + planeX*cameraX;
+      double rayDirY = dirY + planeY*cameraX;
+
+
+      //length of ray from current position to next x or y-side
+      double sideDistX;
+      double sideDistY;
+
+      //length of ray from one x or y-side to next x or y-side
+      double deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+      double deltaDistY = sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+      double perpWallDist;
+
+      //what direction to step in x or y-direction (either +1 or -1)
+      int stepX;
+      int stepY;
+
+      int hit = 0; //was there a wall hit?
+      int side; //was a NS or a EW wall hit?
+
+      //calculate step and initial sideDist
+      if (rayDirX < 0)
+      {
+        stepX = -1;
+        sideDistX = (posX - mapX) * deltaDistX;
+      }
+      else
+      {
+        stepX = 1;
+        sideDistX = (mapX + 1.0 - posX) * deltaDistX;
+      }
+      if (rayDirY < 0)
+      {
+        stepY = -1;
+        sideDistY = (posY - mapY) * deltaDistY;
+      }
+      else
+      {
+        stepY = 1;
+        sideDistY = (mapY + 1.0 - posY) * deltaDistY;
+      }
+
+
+
+
+      /////////////////////////////////////////////
+      ///////////////////////////////////////
+
+    float step = 1.0 * cub->imgs[0].y / lineHeight;
+    float texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * step;
+
+for (int y = drawStart; y < drawEnd; y++) {
+	int texY = (int)texPos;
+	texPos += step;
+
+	if (texX >= 0 && texX < cub->imgs[0].x &&
+		texY >= 0 && texY < cub->imgs[0].y)
+	{
+		color = *(int *)(cub->imgs[0].addr +
+			   (texY * cub->imgs[0].size_line +
+			    texX * (cub->imgs[0].bpp / 8)));
+	}
+	else color = 0x000000;
+
+	my_mlx_pixel_put(&cub->imgs[1], i, y, color);
+}//double texPos = (double)(drawStart - HEIGH / 2 + lineHeight / 2) * step;

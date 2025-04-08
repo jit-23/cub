@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/06 19:15:37 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/06 23:06:54 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/08 05:12:23 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@ void init_cub(t_cub *cub);
 void exit_msg(t_cub *cub, char *str);
 void put_square(t_cub *cub, int x, int y, int size, int color);
 int key_press(int kcode, t_cub *cub);
-void close_window(void);
 void move_player(t_cub *cub);
+void close_window(void);
 int  draw_loop(t_cub *cub);
 void clear_win(t_cub *cub);
 char **get_map(void);
@@ -31,8 +31,8 @@ void cast_rays(t_cub *cub);
 void put_pixel(t_cub *cub, int x, int y, int color);
 void my_mlx_pixel_put(t_img *img, int x, int y, int color);
 
-
-void my_mlx_pixel_put(t_img *img, int x, int y, int color) // img = cub->imgs[1]
+ 
+void my_mlx_pixel_put(t_img *img, int x, int y, int color) // img = cub->imgs[1] // [1] e o que corresponde ao ecra
 {
 	/* if (!img || !img->addr)
 	{
@@ -50,11 +50,13 @@ void my_mlx_pixel_put(t_img *img, int x, int y, int color) // img = cub->imgs[1]
 int draw_loop(t_cub *cub)
 {
 	//usleep(166667);
-	clear_win(cub);
+clear_win(cub);
 	move_player(cub);
-	//put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
-	//draw_map(cub);
+	put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
+	draw_map(cub);
 	cast_rays(cub);
+	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win,cub->img,0,0);
+
 	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->imgs[1].img, 0, 0);
 	return 0;
 }
@@ -76,7 +78,7 @@ void close_window(void)
 void start_cub(t_cub *cub)
 {
     cub->mlx_con = mlx_init();
-	cub->mlx_win = mlx_new_window(cub->mlx_con, (WIDTH) , HEIGH, "cub");
+	cub->mlx_win = mlx_new_window(cub->mlx_con, WIDTH , HEIGH, "cub");
 	if (!cub->mlx_win)
 		exit_msg(cub, "Can't init win.\n");
 	mlx_hook(cub->mlx_win, 17, 0, (void *)close_window, cub);
@@ -92,9 +94,6 @@ void start_cub(t_cub *cub)
 	else
 		printf("done \n");
 	cub->imgs[0].img = mlx_xpm_file_to_image(cub->mlx_con, "textures/3.xpm", &(cub->imgs[0].x), &(cub->imgs[0].y));
-	printf("%p\n", cub->imgs[0].img);
-	printf("%d\n", cub->imgs[0].x);
-	printf("%d\n", cub->imgs[0].y);
 	cub->imgs[0].addr = mlx_get_data_addr(cub->imgs[0].img, &cub->imgs[0].bpp, &cub->imgs[0].size_line, &cub->imgs[0].endian);
 	/* img 1 is the main screen */cub->imgs[1].img = mlx_new_image(cub->mlx_con, WIDTH, HEIGH);
 	/* img 1 is the main screen */cub->imgs[1].addr = mlx_get_data_addr(cub->imgs[1].img, &cub->imgs[1].bpp, &cub->imgs[1].size_line, &cub->imgs[1].endian);
@@ -109,11 +108,11 @@ void start_cub(t_cub *cub)
 void init_cub(t_cub *cub)
 {
 
-	cub->px = WIDTH / 12;//(WIDTH) /2;
-	cub->py = HEIGH / 12;//(HEIGH) /2;
+	cub->px = WIDTH / 2;//(WIDTH) /2;
+	cub->py = HEIGH / 2;//(HEIGH) /2;
 
 	cub->angle  = PI/2;
-	cub->speed = 0.5;
+	cub->speed = 0.2;
 	cub->angle = NORTH;
 
 	cub->sin = 1;
@@ -264,9 +263,9 @@ char **get_map(void)
     map[5] = "100000000000000000000000000011";
     map[6] = "100000000000000000000000000011";
     map[7] = "100000000000000000000000000011";
-    map[8] = "100000000000000000000000000011";
+    map[8] = "100000000001111100000000000011";
     map[9] = "100000000000000000000000000011";
-    map[10] = "100000000000000000000000000011";
+    map[10] = "100000000000100000000000000011";
     map[11] = "100000000000000000000000000011";
     map[12] = "100000000000000000000000000011";
     map[13] = "100000000000000000000000000011";
@@ -331,16 +330,19 @@ void draw_line(t_cub *cub, float angl_start, int i)
 
 
 // **Ray Direction**
-float rayDirX = cos(angl_start);
-float rayDirY = sin(angl_start);
+double rayDirX = cos(angl_start);
+double rayDirY = sin(angl_start);
 
 // **Step sizes**
-float deltaDistX = fabs(1 / rayDirX);
-float deltaDistY = fabs(1 / rayDirY);	// conseguir o valor absoluto do percurso que o RAIO  do  x/y tem que
+//double deltaDistX = fabs(1 / rayDirX);
+//double deltaDistY = fabs(1 / rayDirY);	// conseguir o valor absoluto do percurso que o RAIO  do  x/y tem que
 										// percorrer para avancar 1 tile no grafico cartesiano.
 
+	double deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+	double deltaDistY = sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+
 /// **Calculate Initial Side Distances**
-float sideDistX, sideDistY; // valores que x e y tem que percorrer para o RAIO dar o valor certo e bater 
+double sideDistX, sideDistY; // valores que x e y tem que percorrer para o RAIO dar o valor certo e bater 
 // no vertice do tile seguinte 
 int stepX, stepY; // valor positivo ou negativo para diferenciar o lado certo a percorrer
 
@@ -380,24 +382,30 @@ else {
 	 // Check for a collision (wall hit)
 	 if (colision(mapX, mapY, cub)) {
 		 hit = 1;
-	 }
- }
+	}
+}
 
 // **Calculate Distance to Wall**
- float perpWallDist;	
+ double perpWallDist;
  if (side == 0)
 	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
  else
 	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY;
-
  // **Wall Height Calculation**
- perpWallDist *= cos(angl_start - cub->angle); // Correct for fish-eye effect
- float lineHeight = (BLOCK / perpWallDist) * (HEIGH / 2);
-/* int lineHeight = (int)(HEIGH / perpWallDist)*/
- // **Determine Start and End Points for the Vertical Line**
- float drawStart = (HEIGH - lineHeight) / 2;
- float drawEnd = drawStart + lineHeight;
+perpWallDist *= cos(angl_start - cub->angle); // Correct for fish-eye effect
+//double lineHeight = (double)(HEIGH / 2) *( 58 / perpWallDist);
+/* WRONG! */double lineHeight = (double)(((HEIGH)) / perpWallDist) ;
+//double  lineHeight = (double)((HEIGH *BLOCK) / perpWallDist) ;
+/* WRONG! */double lineHeight = (BLOCK / perpWallDist) * (HEIGH/2);
+printf("%f\n", lineHeight);
 
+ // **Determine Start and End Points for the Vertical Line**
+ int drawStart = (int)((HEIGH - lineHeight) / 2);
+ int drawEnd = (int)(drawStart + lineHeight);
+
+if (drawStart < 0) drawStart = 0;
+if (drawEnd >= HEIGH) drawEnd = HEIGH - 1;
+//printf("start %f\n");
 // **Draw the Wall Column**
 double xwall;// = mapY + perpWallDist * rayDirY;
 
@@ -407,30 +415,45 @@ else
     xwall = cub->px + perpWallDist * rayDirX;
 xwall -= floor(xwall);
 
-xwall -= floor(xwall);
+int texX =  (int) (xwall * (double)cub->imgs[0].x);
 
-int texX=  (int) (xwall * (double)cub->imgs[0].x);
-if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0))
+if ((side == 0 && rayDirX < 0))
+    texX = cub->imgs[0].x - texX - 1;
+if (side == 1 && rayDirY > 0)
     texX = cub->imgs[0].x - texX - 1;
 int y = drawStart;
+float step = 1.0 * cub->imgs[0].y / lineHeight;
+float texPos = (drawStart - (HEIGH / 2 - lineHeight / 2)) * step;
+//double texPos = (double)(drawStart - (double)(lineHeight / 2) + (double)(HEIGH / 2)) * step;
+
+printf("drawStart - %f\n", drawStart);
+printf("HEIGH / 2 - %d\n", HEIGH / 2);
+printf("lineHeight / 2 - %f\n", lineHeight / 2);
+printf("all - %f\n", drawStart - (double)(HEIGH / 2) + lineHeight / 2);
+printf("all - %f\n", drawStart - (double)(HEIGH / 2) + lineHeight / 2);
+printf("all - %f\n", drawStart - (double)(HEIGH / 2) + lineHeight / 2);
+printf("step - %f\n", step);
+printf("texPos - %f\n", texPos);
+printf("===============================================\n");
+//usleep(100);
+/* HEIGH / 2 */
 while(y < drawEnd)
 {
+	//texY = ((d * cub->imgs[0].y) / HEIGH) / 256;
+	int texY = (int)texPos & (cub->imgs[0].y - 1);;
+	texPos+=step;
 	int color;
-	int d = y*256 - HEIGH * 128 + lineHeight * 128;
-	int texY = ((d * cub->imgs[0].y) / HEIGH) / 256;
+	//int d = y*256 - HEIGH * 128 + lineHeight * 128;
+	
 	if (texY >= 0 && texY < cub->imgs[0].y && texX >= 0 && texX < cub->imgs[0].x)
 	{
 		color = *(int *)(cub->imgs[0].addr + (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8) ));
-		printf("%d\n", y);
-		printf("%d\n", i);
 	}
+		
 	else
 		color = 0x000000;
-	//printf("->>%d\n", color);
-		//mlx_pixel_put(cub->mlx_con, cub->mlx_win, WIDTH/2 , HEIGH/2, color );
-	
 	my_mlx_pixel_put(&cub->imgs[1], i, y, color);
-	y++;
+	y++;	
 }
 }
 
@@ -442,9 +465,14 @@ void put_pixel(t_cub *cub, int x, int y, int color)
         return;
 	int index = y * cub->size_line + x * cub->bpp / 8;
 //	mlx_pixel_put(cub->mlx_con, cub->mlx_win, x, y, color);
-	cub->img_address[index] = color & 0xFF;
-    cub->img_address[index + 1] = (color >> 8) & 0xFF;
-    cub->img_address[index + 2] = (color >> 16) & 0xFF;
+	//cub->img_address[index] = color & 0xFF;
+    //cub->img_address[index + 1] = (color >> 8) & 0xFF;
+    //cub->img_address[index + 2] = (color >> 16) & 0xFF;
+
+	cub->imgs[1].addr[index] = color & 0xFF;
+    cub->imgs[1].addr[index + 1] = (color >> 8) & 0xFF;
+    cub->imgs[1].addr[index + 2] = (color >> 16) & 0xFF;
+
 
 }
 
@@ -494,7 +522,7 @@ void put_pixel(t_cub *cub, int x, int y, int color)
 void cast_rays(t_cub *cub)
 {
 
-	float fraction = PI / 3 / WIDTH;
+	double fraction = PI / 3 / WIDTH;
     float start_x = cub->angle - PI / 6;
     int i = 0;
     while(i < WIDTH)
