@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main3.c                                            :+:      :+:    :+:   */
+/*   main4.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/06 19:15:37 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/11 14:58:40 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/11 17:04:19 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ void clear_win(t_cub *cub);
 char **get_map(void);
 void draw_map(t_cub *game);
 void draw_line(t_cub *cub, float start_x, int i);
-void calculate_distance(t_cub *cub);
 void cast_rays(t_cub *cub);
 void put_pixel(t_cub *cub, int x, int y, int color);
 void my_mlx_pixel_put(t_img *img, int x, int y, int color);
@@ -386,52 +385,58 @@ else {
 
 // **Calculate Distance to Wall**
  double perpWallDist;
- if (side == 0)
+       if(side == 0) perpWallDist = (sideDistX - deltaDistX);
+      else          perpWallDist = (sideDistY - deltaDistY);
+ /* if (side == 0)
 	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
  else
-	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY;
+	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY; */
  // wall H calc
 perpWallDist *= cos(angl_start - cub->angle); // Correct  fish effect
 //double proj_plane_dist = (HEIGH / 2) / tan((PI / 1.1) / 2);
-double lineHeight = (BLOCK * HEIGH ) / perpWallDist;
+double lineHeight = (BLOCK * HEIGH ) / perpWallDist ;
 //double  lineHeight = (double)((HEIGH *BLOCK) / (double)perpWallDist) ;
- int drawStart = (int)((HEIGH - lineHeight) / 2);
- int drawEnd = (int)(drawStart + lineHeight);
-
-if (drawStart < 0) 
+ //int drawStart = (int)((HEIGH - lineHeight) / 2);
+ int drawStart = -lineHeight / 2 + HEIGH / 2;
+ if (drawStart < 0) 
 	drawStart = 0;
-if (drawEnd >= HEIGH) 
+
+ //int drawEnd = (int)(drawStart + lineHeight);
+int drawEnd = lineHeight /2+HEIGH/2;
+
+if (drawEnd >= HEIGH)
 	drawEnd = HEIGH - 1;
+
 double xwall;// = mapY + perpWallDist * rayDirY;
 
 if (side == 0)
     xwall = cub->py + perpWallDist * rayDirY;
 else
     xwall = cub->px + perpWallDist * rayDirX;
-xwall -= floor(xwall);
-//xwall = fmod(xwall, BLOCK);
-printf("xwall - %f\n", xwall);
-//xwall = 1.9;
-int texX =  (int) ((xwall/* /BLOCK */) * (double)cub->imgs[0].x);
+//xwall -=floor(xwall);
+xwall = fmod(xwall, BLOCK) ;
+int texX =  (int) ((xwall/BLOCK) * ((double)cub->imgs[0].x));
 if ((side == 0 && rayDirX < 0))
     texX = cub->imgs[0].x - texX - 1;
 if (side == 1 && rayDirY > 0)
     texX = cub->imgs[0].x - texX - 1;
 int y = drawStart;
-float step = 1.0 * cub->imgs[0].y / lineHeight;
+float step = 1.0 * cub->imgs[0].y /lineHeight ;//BLOCK;
+//float step = (float)(cub->imgs[0].y) / (float)(BLOCK);
 float texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * step;
-
+//float texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * ((float)cub->imgs[0].y / BLOCK);
 while (y < drawEnd) {
 	int texY = (int)texPos;
-	texPos += step;
 
-	if (texY < 0) texY = 0;
-	if (texY >= cub->imgs[0].y) texY = cub->imgs[0].y - 1;
+	if (texY < 0)
+        texY = 0;
+	if (texY >= cub->imgs[0].y) 
+        texY = cub->imgs[0].y - 1;
 
-	int color = *(int *)(cub->imgs[0].addr + 
-	            (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8)));
-
+	int color = *(int *)(cub->imgs[0].addr +
+                (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8)));
 	my_mlx_pixel_put(&cub->imgs[1], i, y, color);
+	texPos += step;
 	y++;
 }
 }
