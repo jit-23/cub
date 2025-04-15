@@ -7,7 +7,7 @@ RED:=\033[0;31m
 BLUE=\033[0;34m
 default_colour=\033[0m
 
-SRC_FILES:=  main3.c 
+SRC_FILES:=  main4.c 
 
 MAKE:= make -j -C
 LIBFT_DIR:= libs/libft
@@ -51,7 +51,7 @@ clean:
 		@echo "${RED}object files and directory deleted:${default_colour}"
 
 #valgrind: ${NAME}
-#			valgrind --suppressions=/home/fde-jesu/readline.supp --leak-check=full --show-leak-kinds=all ./minishell
+#			valgrind  --leak-check=full --show-leak-kinds=all ./cub
 
 fclean: clean
 		${MAKE} ${LIBFT_DIR} fclean
