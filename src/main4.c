@@ -6,7 +6,7 @@
 /*   By: fde-jesu <fde-jesu@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/06 19:15:37 by fde-jesu          #+#    #+#             */
-/*   Updated: 2025/04/11 17:04:19 by fde-jesu         ###   ########.fr       */
+/*   Updated: 2025/04/15 16:40:14 by fde-jesu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ clear_win(cub);
 	put_square(cub, cub->px,cub->py, BLOCK, 0xfff000);
 	draw_map(cub);
 	cast_rays(cub);
-	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win,cub->img,0,0);
+	//mlx_put_image_to_window(cub->mlx_con, cub->mlx_win,cub->img,0,0);
 
 	mlx_put_image_to_window(cub->mlx_con, cub->mlx_win, cub->imgs[1].img, 0, 0);
 	return 0;
@@ -321,21 +321,49 @@ float distance(t_cub * cub,float x1 , float y1, float x2, float y2)
 /////////////////////////////////////////////////////
 
 
+void cast_rays(t_cub *cub)
+{
+
+	double fraction = PI / 3 / WIDTH;
+    float start_x = cub->angle - PI / 6;
+    int i = 0;
+    while(i < WIDTH)
+    {
+        draw_line(cub,  start_x, i);
+        start_x += fraction;
+        i++;
+    }
+	/* float fract = (PI / 3) / (WIDTH) ;
+	printf("cub->angle = %f\n", cub->angle);
+	float start_x  =  cub->angle -  (PI / 6);
+	float i = 0; 
+	while(i < WIDTH)
+	{
+		draw_line(cub, start_x, i);
+		start_x += fract;
+		i++;
+	} */
+}
+
 void draw_line(t_cub *cub, float angl_start, int i)
 {
  // **Player Position**
  int mapX = (int)cub->px;  
  int mapY = (int)cub->py;  
 
+double fov = PI/3;
+double planeLength = tan(fov / 2);
 
-double rayDirX = cos(angl_start);
-double rayDirY = sin(angl_start);
+double dirX = cos(cub->angle);
+    double dirY = sin(cub->angle);
+//double planeX = 0, planeY = 0.66; //the 2d raycaster version of camera plane
+double planeX = -dirY * planeLength;
+double planeY =  dirX * planeLength;
 
-// Step sizes
-//double deltaDistX = fabs(1 / rayDirX);
-//double deltaDistY = fabs(1 / rayDirY);	// conseguir o valor absoluto do percurso que o RAIO  do  x/y tem que
-										// percorrer para avancar 1 tile no grafico cartesiano.
+double cameraX = 2 * i / (double)WIDTH - 1;
 
+double rayDirX = dirX + planeX * cameraX;
+double rayDirY = dirY + planeY * cameraX;
 	double deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
 	double deltaDistY = sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
 
@@ -384,25 +412,17 @@ else {
 }
 
 // **Calculate Distance to Wall**
- double perpWallDist;
-       if(side == 0) perpWallDist = (sideDistX - deltaDistX);
-      else          perpWallDist = (sideDistY - deltaDistY);
- /* if (side == 0)
-	 perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
- else
-	 perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY; */
- // wall H calc
-perpWallDist *= cos(angl_start - cub->angle); // Correct  fish effect
-//double proj_plane_dist = (HEIGH / 2) / tan((PI / 1.1) / 2);
+  double perpWallDist;
+	if (side == 0)
+   		perpWallDist = (mapX - cub->px + (1 - stepX) / 2) / rayDirX;
+	else
+    	perpWallDist = (mapY - cub->py + (1 - stepY) / 2) / rayDirY;
 double lineHeight = (BLOCK * HEIGH ) / perpWallDist ;
-//double  lineHeight = (double)((HEIGH *BLOCK) / (double)perpWallDist) ;
- //int drawStart = (int)((HEIGH - lineHeight) / 2);
  int drawStart = -lineHeight / 2 + HEIGH / 2;
  if (drawStart < 0) 
 	drawStart = 0;
 
- //int drawEnd = (int)(drawStart + lineHeight);
-int drawEnd = lineHeight /2+HEIGH/2;
+int drawEnd = lineHeight / 2 + HEIGH / 2;
 
 if (drawEnd >= HEIGH)
 	drawEnd = HEIGH - 1;
@@ -413,21 +433,25 @@ if (side == 0)
     xwall = cub->py + perpWallDist * rayDirY;
 else
     xwall = cub->px + perpWallDist * rayDirX;
-//xwall -=floor(xwall);
-xwall = fmod(xwall, BLOCK) ;
-int texX =  (int) ((xwall/BLOCK) * ((double)cub->imgs[0].x));
+xwall = fmod(xwall, BLOCK)/BLOCK ;
+int texX =  (int) ((xwall) * ((double)cub->imgs[0].x));
 if ((side == 0 && rayDirX < 0))
     texX = cub->imgs[0].x - texX - 1;
 if (side == 1 && rayDirY > 0)
     texX = cub->imgs[0].x - texX - 1;
 int y = drawStart;
 float step = 1.0 * cub->imgs[0].y /lineHeight ;//BLOCK;
-//float step = (float)(cub->imgs[0].y) / (float)(BLOCK);
 float texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * step;
-//float texPos = (drawStart - HEIGH / 2 + lineHeight / 2) * ((float)cub->imgs[0].y / BLOCK);
+
+for (int y = 0; y < drawStart; y++)
+	my_mlx_pixel_put(&cub->imgs[1], i, y, 0xFF);
+
+// Draw Floor
+for (int y = drawEnd; y < HEIGH; y++)
+	my_mlx_pixel_put(&cub->imgs[1], i, y, 0xFFFF);
+
 while (y < drawEnd) {
 	int texY = (int)texPos;
-
 	if (texY < 0)
         texY = 0;
 	if (texY >= cub->imgs[0].y) 
@@ -448,11 +472,6 @@ void put_pixel(t_cub *cub, int x, int y, int color)
 	if(x >= WIDTH || y >= HEIGH || x < 0 || y < 0)
         return;
 	int index = y * cub->size_line + x * cub->bpp / 8;
-//	mlx_pixel_put(cub->mlx_con, cub->mlx_win, x, y, color);
-	//cub->img_address[index] = color & 0xFF;
-    //cub->img_address[index + 1] = (color >> 8) & 0xFF;
-    //cub->img_address[index + 2] = (color >> 16) & 0xFF;
-
 	cub->imgs[1].addr[index] = color & 0xFF;
     cub->imgs[1].addr[index + 1] = (color >> 8) & 0xFF;
     cub->imgs[1].addr[index + 2] = (color >> 16) & 0xFF;
@@ -460,87 +479,17 @@ void put_pixel(t_cub *cub, int x, int y, int color)
 
 }
 
-/* void my_mlx_pixel_put(t_img *img, int x, int y, int color)
-{
-    char *dst = NULL;
-    if (img->addr == NULL)
-		printf("noooo\n");
-	//printf("sum - %d\n", (y * img->size_line + x * (img->bpp / 8)));
-	
-	printf("bpp - %d\n", img->bpp / 8);
-	printf("img->size_line - %d\n", img->size_line);
-	printf("(y * img->size_line + x * (img->bpp / 8) =  ||%d||\n", (y * img->size_line + x * (img->bpp / 8)));
-	dst = img->addr + (y * img->size_line + x * (img->bpp / 8));
-	printf("x - %d\n", x);
-	printf("y - %d\n", y);
-	*(unsigned int*)dst = color;
-} */
-
-
-
-/* while(y < drawEnd)
-{
-	//("cub->imgs[0].size_line - %d\n", cub->imgs[0].size_line);
-	//("HEIGH - %d\n", HEIGH);
-	int d = y*256 - HEIGH * 128 + lineHeight * 128;
-	int texY = ((d * cub->imgs[0].y) / HEIGH) / 256;
-	//("......\n%p\n",cub->imgs[0].addr);
-	////("d - %d\n", d);
-	//("%d\n", texY);
-	//("%d\n",cub->imgs[0].size_line);
-	//("%d\n",texX);//cub->imgs[0].bpp / 8
-	//("_%d\n",cub->imgs[0].bpp );//cub->imgs[0].bpp / 8
-	int color = *(int *)(cub->imgs[0].addr + (texY * cub->imgs[0].size_line + texX * (cub->imgs[0].bpp / 8) ));
-	//("----------------------------\n");
-	//("->%d\n",  i);
-	//("->%d\n",  y);
-	my_mlx_pixel_put(&cub->imgs[0], i, y, color);
-	//put_pixel(cub, i, y, color);
-	//("----------------------------\n");
-
-	y++;
-
-} */
-
-
-void cast_rays(t_cub *cub)
-{
-
-	double fraction = PI / 3 / WIDTH;
-    float start_x = cub->angle - PI / 6;
-    int i = 0;
-    while(i < WIDTH)
-    {
-        draw_line(cub,  start_x, i);
-        start_x += fraction;
-        i++;
-    }
-	/* float fract = (PI / 3) / (WIDTH) ;
-	printf("cub->angle = %f\n", cub->angle);
-	float start_x  =  cub->angle -  (PI / 6);
-	float i = 0; 
-	while(i < WIDTH)
-	{
-		draw_line(cub, start_x, i);
-		start_x += fract;
-		i++;
-	} */
-}
-
-
-
-
 void clear_win(t_cub *cub)
 {
 	
-	//mlx_clear_window(cub->mlx_con,cub->mlx_win);
-	for (int i = 0; i < (WIDTH); i++)
-	{
-		for (int j = 0; j < (HEIGH); j++)
-		{
-			put_pixel(cub, i,j, 0);
-		}
-	}
+	////mlx_clear_window(cub->mlx_con,cub->mlx_win);
+	//for (int i = 0; i < (WIDTH); i++)
+	//{
+	//	for (int j = 0; j < (HEIGH); j++)
+	//	{
+	//		put_pixel(cub, i,j, 0);
+	//	}
+	//}
 
 }
 
@@ -553,7 +502,6 @@ int main(int ac, char *av[])
 		return (ft_putstr_fd(2, "Error: Wrong nbr of args\n"), 1);
 	init_cub(&cub);
 	start_cub(&cub);
-	//put_square(&cub,(WIDTH * PIXEL) / 2 , (HEIGH * PIXEL) / 2);
 	mlx_hook(cub.mlx_win,2, 1L<<0, key_press, &cub);
 	mlx_hook(cub.mlx_win,3, 1L<<1, key_release, &cub);
 
